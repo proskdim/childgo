@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"childgo/config"
 	"childgo/database"
 	"childgo/model"
 	jwtUtil "childgo/utils"
@@ -26,8 +25,6 @@ type (
 var (
 	ErrUserExist    = errors.New("user already exist")
 	ErrBodyParser   = errors.New("invalid body parameters")
-	ErrUserNotFound = errors.New("user not found")
-	ErrJwtContext   = errors.New("wrong type of JWT token in context")
 )
 
 func Signin(ctx *fiber.Ctx) error {
@@ -73,32 +70,4 @@ func Signup(ctx *fiber.Ctx) error {
 	database.DBConn.Create(&user)
 
 	return ctx.SendStatus(fiber.StatusOK)
-}
-
-func Profile(ctx *fiber.Ctx) error {
-	token, ok := ctx.Context().Value(config.ContextKeyUser).(*jwt.Token)
-
-	if !ok {
-		return ctx.Status(fiber.StatusBadRequest).SendString("wrong type of JWT token in context")
-	}
-
-	jwtPayload, err := jwtUtil.Payload(token)
-
-	if err != nil {
-		return ctx.Status(fiber.StatusUnauthorized).SendString(err.Error())
-	}
-
-	email := jwtPayload["sub"].(string)
-
-	user := new(model.User)
-
-	dbUser := database.DBConn.Where("email = ?", email).First(&user)
-
-	if errors.Is(dbUser.Error, gorm.ErrRecordNotFound) {
-		return ctx.Status(fiber.StatusConflict).SendString(ErrUserNotFound.Error())
-	}
-
-	return ctx.JSON(ProfileResponse{
-		Email: email,
-	})
 }
