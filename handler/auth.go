@@ -2,27 +2,18 @@ package handler
 
 import (
 	"childgo/config"
+	"childgo/database"
+	"childgo/model"
 	jwtUtil "childgo/utils"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	jwt "github.com/golang-jwt/jwt/v5"
-	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type (
-	SignUpRequest struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-
-	SignInRequest struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-
 	SignInResponse struct {
 		JWTToken string `json:"jwt_token"`
 	}
@@ -30,34 +21,30 @@ type (
 	ProfileResponse struct {
 		Email string `json:"email"`
 	}
-
-	User struct {
-		Email    string
-		password string
-	}
 )
 
-var users = map[string]User{}
+var (
+	ErrUserExist    = errors.New("user already exist")
+	ErrBodyParser   = errors.New("invalid body parameters")
+	ErrUserNotFound = errors.New("user not found")
+	ErrJwtContext   = errors.New("wrong type of JWT token in context")
+)
 
 func Signin(ctx *fiber.Ctx) error {
-	regReq := SignInRequest{}
+	user := new(model.User)
 
-	if err := ctx.BodyParser(&regReq); err != nil {
-		return fmt.Errorf("body parser: %w", err)
+	if err := ctx.BodyParser(&user); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).SendString(ErrBodyParser.Error())
 	}
 
-	user, exists := users[regReq.Email]
+	dbUser := database.DBConn.Where("email = ? AND password = ?", &user.Email, &user.Password).First(&user)
 
-	if !exists {
-		return ctx.SendStatus(fiber.StatusUnprocessableEntity)
-	}
-
-	if regReq.Password != user.password {
+	if errors.Is(dbUser.Error, gorm.ErrRecordNotFound) {
 		return ctx.SendStatus(fiber.StatusUnprocessableEntity)
 	}
 
 	payload := jwt.MapClaims{
-		"sub": regReq.Email,
+		"sub": &user.Email,
 		"exp": time.Now().Add(time.Hour * 72).Unix(),
 	}
 
@@ -73,20 +60,17 @@ func Signin(ctx *fiber.Ctx) error {
 }
 
 func Signup(ctx *fiber.Ctx) error {
-	regReq := SignUpRequest{}
+	user := new(model.User)
 
-	if err := ctx.BodyParser(&regReq); err != nil {
-		return fmt.Errorf("body parser: %w", err)
+	if err := ctx.BodyParser(&user); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).SendString(ErrBodyParser.Error())
 	}
 
-	if _, exists := users[regReq.Email]; exists {
-		return ctx.SendStatus(fiber.StatusConflict)
+	if err := database.DBConn.First(&user, "email = ?", &user.Email).Error; err == nil {
+		return ctx.Status(fiber.StatusConflict).SendString(ErrUserExist.Error())
 	}
 
-	users[regReq.Email] = User{
-		Email:    regReq.Email,
-		password: regReq.Password,
-	}
+	database.DBConn.Create(&user)
 
 	return ctx.SendStatus(fiber.StatusOK)
 }
@@ -95,11 +79,7 @@ func Profile(ctx *fiber.Ctx) error {
 	token, ok := ctx.Context().Value(config.ContextKeyUser).(*jwt.Token)
 
 	if !ok {
-		logrus.WithFields(logrus.Fields{
-			"jwt_token_context_value": ctx.Context().Value(config.ContextKeyUser),
-		}).Error("wrong type of JWT token in context")
-
-		return ctx.SendStatus(fiber.StatusBadRequest)
+		return ctx.Status(fiber.StatusBadRequest).SendString("wrong type of JWT token in context")
 	}
 
 	jwtPayload, err := jwtUtil.Payload(token)
@@ -108,13 +88,17 @@ func Profile(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusUnauthorized).SendString(err.Error())
 	}
 
-	userInfo, ok := users[jwtPayload["sub"].(string)]
+	email := jwtPayload["sub"].(string)
 
-	if !ok {
-		return errors.New("user not found")
+	user := new(model.User)
+
+	dbUser := database.DBConn.Where("email = ?", email).First(&user)
+
+	if errors.Is(dbUser.Error, gorm.ErrRecordNotFound) {
+		return ctx.Status(fiber.StatusConflict).SendString(ErrUserNotFound.Error())
 	}
 
 	return ctx.JSON(ProfileResponse{
-		Email: userInfo.Email,
+		Email: email,
 	})
 }
