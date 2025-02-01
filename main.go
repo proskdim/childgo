@@ -9,6 +9,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	appAddress = "localhost:8080"
+)
+
 func main() {
 	webApp := fiber.New()
 
@@ -16,8 +20,12 @@ func main() {
 		panic(err)
 	}
 
+	if err := database.ConnectCache(); err != nil {
+		panic(err)
+	}
+
 	config.SetupConfigs(webApp)
 	router.SetupRoutes(webApp)
 
-	logrus.Error(webApp.Listen(":8080"))
+	logrus.Error(webApp.Listen(appAddress))
 }
