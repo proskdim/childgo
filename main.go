@@ -1,6 +1,7 @@
 package main
 
 import (
+	"childgo/config"
 	"childgo/database"
 	"childgo/router"
 
@@ -15,6 +16,7 @@ func main() {
 		panic(err)
 	}
 
+	config.SetupConfigs(webApp)
 	router.SetupRoutes(webApp)
 
 	logrus.Error(webApp.Listen(":8080"))
