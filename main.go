@@ -1,6 +1,7 @@
 package main
 
 import (
+	"childgo/database"
 	"childgo/router"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,6 +10,10 @@ import (
 
 func main() {
 	webApp := fiber.New()
+
+	if err := database.ConnectDB(); err != nil {
+		panic(err)
+	}
 
 	router.SetupRoutes(webApp)
 
