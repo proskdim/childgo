@@ -11,11 +11,19 @@ import (
 	"gorm.io/gorm"
 )
 
-func Childs(ctx *fiber.Ctx) error {
-	_, ok := ctx.Locals(config.ContextKeyUser).(*jwt.Token)
+func checkJwt(ctx *fiber.Ctx) (*jwt.Token, error) {
+	token, ok := ctx.Locals(config.ContextKeyUser).(*jwt.Token)
 
 	if !ok {
-		return ctx.Status(fiber.StatusBadRequest).SendString(ErrJwtContext.Error())
+		return nil, ErrJwtContext
+	}
+
+	return token, nil
+}
+
+func Childs(ctx *fiber.Ctx) error {
+	if _, err := checkJwt(ctx); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	childs := make([]model.Child, 0)
@@ -26,10 +34,8 @@ func Childs(ctx *fiber.Ctx) error {
 }
 
 func NewChild(ctx *fiber.Ctx) error {
-	_, ok := ctx.Locals(config.ContextKeyUser).(*jwt.Token)
-
-	if !ok {
-		return ctx.Status(fiber.StatusBadRequest).SendString(ErrJwtContext.Error())
+	if _, err := checkJwt(ctx); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	child := new(model.Child)
@@ -44,10 +50,8 @@ func NewChild(ctx *fiber.Ctx) error {
 }
 
 func GetChild(ctx *fiber.Ctx) error {
-	_, ok := ctx.Locals(config.ContextKeyUser).(*jwt.Token)
-
-	if !ok {
-		return ctx.Status(fiber.StatusBadRequest).SendString(ErrJwtContext.Error())
+	if _, err := checkJwt(ctx); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	id := ctx.Params("id")
@@ -64,6 +68,10 @@ func GetChild(ctx *fiber.Ctx) error {
 }
 
 func DeleteChild(ctx *fiber.Ctx) error {
+	if _, err := checkJwt(ctx); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
 	id := ctx.Params("id")
 
 	child := new(model.Child)

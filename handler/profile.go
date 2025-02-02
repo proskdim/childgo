@@ -3,13 +3,12 @@ package handler
 import (
 	"childgo/config"
 	"childgo/database"
-	"childgo/model"
+	"childgo/model/user"
 	jwtUtil "childgo/utils"
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
 	jwt "github.com/golang-jwt/jwt/v5"
-	"gorm.io/gorm"
 )
 
 type ProfileResponse struct {
@@ -34,25 +33,13 @@ func Profile(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusUnauthorized).SendString(err.Error())
 	}
 
-	_, err = FindByEmail(email)
+	dbUser, err := user.FindByEmail(database.DBConn, email)
 
 	if err != nil {
 		return ctx.Status(fiber.StatusNotFound).SendString(err.Error())
 	}
 
 	return ctx.JSON(ProfileResponse{
-		Email: email,
+		Email: dbUser.Email,
 	})
-}
-
-func FindByEmail(email string) (*gorm.DB, error) {
-	user := new(model.User)
-
-	dbUser := database.DBConn.Where("email = ?", email).First(&user)
-
-	if errors.Is(dbUser.Error, gorm.ErrRecordNotFound) {
-		return nil, ErrUserNotFound
-	}
-
-	return dbUser, nil
 }

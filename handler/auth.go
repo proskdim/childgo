@@ -19,9 +19,11 @@ type (
 )
 
 var (
-	ErrUserExist    = errors.New("user already exist")
-	ErrBodyParser   = errors.New("invalid body parameters")
+	ErrUserExist  = errors.New("user already exist")
+	ErrBodyParser = errors.New("invalid body parameters")
 )
+
+var ExpiriesTime = time.Now().Add(time.Hour * 24).Unix()
 
 func Signin(ctx *fiber.Ctx) error {
 	user := new(model.User)
@@ -38,7 +40,7 @@ func Signin(ctx *fiber.Ctx) error {
 
 	payload := jwt.MapClaims{
 		"sub": &user.Email,
-		"exp": time.Now().Add(time.Minute * 1).Unix(),
+		"exp": ExpiriesTime,
 	}
 
 	token, err := jwtUtil.Get(payload)
