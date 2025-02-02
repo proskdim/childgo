@@ -19,3 +19,13 @@ func FindByEmail(db *gorm.DB, email string) (*model.User, error) {
 
 	return &user, nil
 }
+
+func FindAllChilds(db *gorm.DB, user *model.User) (*[]model.Child, error) {
+	err := db.Preload("Childrens").First(&user, &user.ID).Error
+	return &user.Childrens, err
+}
+
+func AddChild(db *gorm.DB, user *model.User, child *model.Child) (*model.Child, error) {
+	err := db.Model(&user).Association("Childrens").Append(child)
+	return child, err
+}

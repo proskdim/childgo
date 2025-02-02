@@ -5,6 +5,8 @@ import (
 	"childgo/database"
 	"childgo/model"
 	"childgo/model/child"
+	"childgo/model/user"
+	jwtUtil "childgo/utils"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -22,20 +24,50 @@ func checkJwt(ctx *fiber.Ctx) (*jwt.Token, error) {
 }
 
 func Childs(ctx *fiber.Ctx) error {
-	if _, err := checkJwt(ctx); err != nil {
+	token, err := checkJwt(ctx)
+
+	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	childs := make([]model.Child, 0)
+	email, err := jwtUtil.FindEmailFromToken(token)
 
-	database.DBConn.Find(&childs)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).SendString(err.Error())
+	}
+
+	dbUser, err := user.FindByEmail(database.DBConn, email)
+
+	if err != nil {
+		return ctx.Status(fiber.StatusNotFound).SendString(err.Error())
+	}
+
+	childs, err := user.FindAllChilds(database.DBConn, dbUser)
+
+	if err != nil {
+		return ctx.Status(fiber.StatusNotFound).SendString(err.Error())
+	}
 
 	return ctx.JSON(childs)
 }
 
 func NewChild(ctx *fiber.Ctx) error {
-	if _, err := checkJwt(ctx); err != nil {
+	token, err := checkJwt(ctx)
+
+	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
+	email, err := jwtUtil.FindEmailFromToken(token)
+
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).SendString(err.Error())
+	}
+
+	dbUser, err := user.FindByEmail(database.DBConn, email)
+
+	if err != nil {
+		return ctx.Status(fiber.StatusNotFound).SendString(err.Error())
 	}
 
 	child := new(model.Child)
@@ -44,9 +76,13 @@ func NewChild(ctx *fiber.Ctx) error {
 		return ctx.Status(503).SendString(err.Error())
 	}
 
-	database.DBConn.Create(&child)
+	dbChild, err := user.AddChild(database.DBConn, dbUser, child)
 
-	return ctx.JSON(child)
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusBadRequest)
+	}
+
+	return ctx.JSON(dbChild)
 }
 
 func GetChild(ctx *fiber.Ctx) error {

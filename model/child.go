@@ -12,4 +12,6 @@ type Child struct {
 	Name     string    `gorm:"not null" json:"name"`
 	Age      int       `gorm:"not null" json:"age"`
 	Birthday time.Time `gorm:"not null" json:"birthday"`
+
+	UserID uint
 }
