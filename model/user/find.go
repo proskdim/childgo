@@ -9,15 +9,9 @@ import (
 
 var ErrEmailNotFound = errors.New("record by email not found")
 
-func FindByEmail(db *gorm.DB, email string) (*model.User, error) {
-	var user model.User
-	res := db.Find(&user, &model.User{Email: email})
-
-	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		return nil, ErrEmailNotFound
-	}
-
-	return &user, nil
+func FindByEmail(db *gorm.DB, email string) (user *model.User, err error) {
+	err = db.Find(&user, &model.User{Email: email}).Error
+	return user, err
 }
 
 func FindAllChilds(db *gorm.DB, user *model.User) (*[]model.Child, error) {
