@@ -11,5 +11,8 @@ var (
 )
 
 func SetupConfigs(app *fiber.App) {
-	app.Use(logger.New())
+	app.Use(logger.New(logger.Config{
+		Format:     "${time} ${method} ${path} - ${status} - ${latency}\n",
+		TimeFormat: "2006-01-02 15:04:05.000000",
+	}))
 }
