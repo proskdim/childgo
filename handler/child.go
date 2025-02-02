@@ -23,26 +23,57 @@ func checkJwt(ctx *fiber.Ctx) (*jwt.Token, error) {
 	return token, nil
 }
 
+func fetchUserFromPayload(ctx *fiber.Ctx) (*model.User, error) {
+	token, err := fetchToken(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := fetchUser(token)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, err
+}
+
+func fetchUser(token *jwt.Token) (*model.User, error) {
+	db := database.DBConn
+	email, err := jwtUtil.FindEmailFromToken(token)
+
+	if err != nil {
+		return nil, err
+	}
+
+	dbUser, err := user.FindByEmail(db, email)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return dbUser, nil
+}
+
+func fetchToken(ctx *fiber.Ctx) (token *jwt.Token, err error) {
+	token, err = checkJwt(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return token, err
+}
+
 func Childs(ctx *fiber.Ctx) error {
-	token, err := checkJwt(ctx)
+	fetchedUser, err := fetchUserFromPayload(ctx)
 
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	email, err := jwtUtil.FindEmailFromToken(token)
-
-	if err != nil {
-		return ctx.Status(fiber.StatusUnauthorized).SendString(err.Error())
-	}
-
-	dbUser, err := user.FindByEmail(database.DBConn, email)
-
-	if err != nil {
-		return ctx.Status(fiber.StatusNotFound).SendString(err.Error())
-	}
-
-	childs, err := user.FindAllChilds(database.DBConn, dbUser)
+	childs, err := user.FindAllChilds(database.DBConn, fetchedUser)
 
 	if err != nil {
 		return ctx.Status(fiber.StatusNotFound).SendString(err.Error())
@@ -52,31 +83,19 @@ func Childs(ctx *fiber.Ctx) error {
 }
 
 func NewChild(ctx *fiber.Ctx) error {
-	token, err := checkJwt(ctx)
+	fetchedUser, err := fetchUserFromPayload(ctx)
 
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	email, err := jwtUtil.FindEmailFromToken(token)
-
-	if err != nil {
-		return ctx.Status(fiber.StatusUnauthorized).SendString(err.Error())
-	}
-
-	dbUser, err := user.FindByEmail(database.DBConn, email)
-
-	if err != nil {
-		return ctx.Status(fiber.StatusNotFound).SendString(err.Error())
-	}
-
 	child := new(model.Child)
 
 	if err := ctx.BodyParser(child); err != nil {
-		return ctx.Status(503).SendString(err.Error())
+		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	dbChild, err := user.AddChild(database.DBConn, dbUser, child)
+	dbChild, err := user.AddChild(database.DBConn, fetchedUser, child)
 
 	if err != nil {
 		return ctx.SendStatus(fiber.StatusBadRequest)
