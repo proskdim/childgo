@@ -2,12 +2,8 @@ package user
 
 import (
 	"childgo/model"
-	"errors"
-
 	"gorm.io/gorm"
 )
-
-var ErrEmailNotFound = errors.New("record by email not found")
 
 func FindByEmail(db *gorm.DB, email string) (user *model.User, err error) {
 	err = db.Find(&user, &model.User{Email: email}).Error
