@@ -4,11 +4,11 @@ import (
 	"childgo/config"
 	"childgo/database"
 	"childgo/model"
-	"errors"
+	"childgo/model/child"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	jwt "github.com/golang-jwt/jwt/v5"
-	"gorm.io/gorm"
 )
 
 func checkJwt(ctx *fiber.Ctx) (*jwt.Token, error) {
@@ -54,13 +54,15 @@ func GetChild(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	id := ctx.Params("id")
+	childId, err := strconv.Atoi(ctx.Params("id"))
 
-	child := new(model.Child)
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusBadRequest)
+	}
 
-	dbChild := database.DBConn.First(&child, id)
+	child, err := child.FindById(database.DBConn, childId)
 
-	if errors.Is(dbChild.Error, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return ctx.SendStatus(fiber.StatusNotFound)
 	}
 
@@ -72,13 +74,15 @@ func DeleteChild(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	id := ctx.Params("id")
+	childId, err := strconv.Atoi(ctx.Params("id"))
 
-	child := new(model.Child)
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusBadRequest)
+	}
 
-	dbChild := database.DBConn.First(&child, id)
+	child, err := child.FindById(database.DBConn, childId)
 
-	if errors.Is(dbChild.Error, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return ctx.SendStatus(fiber.StatusNotFound)
 	}
 
