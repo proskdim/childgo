@@ -30,4 +30,10 @@ func SetupRoutes(app *fiber.App) {
 
 	// authorized api handlers
 	authorizedGroup.Get("/profile", handler.Profile)
+
+	//childs
+	authorizedGroup.Get("/childs", handler.Childs)
+	authorizedGroup.Get("/child/:id", handler.GetChild)
+	authorizedGroup.Post("/child", handler.NewChild)
+	authorizedGroup.Delete("/child/:id", handler.DeleteChild)
 }

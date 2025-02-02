@@ -33,3 +33,17 @@ func Payload(token *jwt.Token) (jwt.MapClaims, error) {
 
 	return payload, nil
 }
+
+func FindEmailFromToken(token *jwt.Token) (string, error) {
+	var email string
+
+	jwtPayload, err := Payload(token)
+
+	if err != nil {
+		return email, err
+	}
+
+	email = jwtPayload["sub"].(string)
+
+	return email, err
+}

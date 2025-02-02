@@ -16,10 +16,6 @@ type (
 	SignInResponse struct {
 		JWTToken string `json:"jwt_token"`
 	}
-
-	ProfileResponse struct {
-		Email string `json:"email"`
-	}
 )
 
 var (
@@ -42,7 +38,7 @@ func Signin(ctx *fiber.Ctx) error {
 
 	payload := jwt.MapClaims{
 		"sub": &user.Email,
-		"exp": time.Now().Add(time.Hour * 72).Unix(),
+		"exp": time.Now().Add(time.Minute * 1).Unix(),
 	}
 
 	token, err := jwtUtil.Get(payload)
