@@ -4,7 +4,6 @@ import (
 	"childgo/config"
 	"childgo/database"
 	"childgo/model"
-	"childgo/model/child"
 	"childgo/model/user"
 	jwtUtil "childgo/utils"
 	"strconv"
@@ -66,6 +65,7 @@ func fetchToken(ctx *fiber.Ctx) (token *jwt.Token, err error) {
 	return token, err
 }
 
+// get all childs for current user
 func Childs(ctx *fiber.Ctx) error {
 	fetchedUser, err := fetchUserFromPayload(ctx)
 
@@ -82,6 +82,7 @@ func Childs(ctx *fiber.Ctx) error {
 	return ctx.JSON(childs)
 }
 
+// add new child
 func NewChild(ctx *fiber.Ctx) error {
 	fetchedUser, err := fetchUserFromPayload(ctx)
 
@@ -104,8 +105,11 @@ func NewChild(ctx *fiber.Ctx) error {
 	return ctx.JSON(dbChild)
 }
 
+// get child by id
 func GetChild(ctx *fiber.Ctx) error {
-	if _, err := checkJwt(ctx); err != nil {
+	fetchedUser, err := fetchUserFromPayload(ctx)
+
+	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
@@ -115,7 +119,7 @@ func GetChild(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(fiber.StatusBadRequest)
 	}
 
-	child, err := child.FindById(database.DBConn, childId)
+	child, err := user.FindChild(database.DBConn, fetchedUser, childId)
 
 	if err != nil {
 		return ctx.SendStatus(fiber.StatusNotFound)
@@ -124,8 +128,11 @@ func GetChild(ctx *fiber.Ctx) error {
 	return ctx.JSON(child)
 }
 
+// delete child for current user
 func DeleteChild(ctx *fiber.Ctx) error {
-	if _, err := checkJwt(ctx); err != nil {
+	fetchedUser, err := fetchUserFromPayload(ctx)
+
+	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
@@ -135,13 +142,15 @@ func DeleteChild(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(fiber.StatusBadRequest)
 	}
 
-	child, err := child.FindById(database.DBConn, childId)
+	child, err := user.FindChild(database.DBConn, fetchedUser, childId)
 
 	if err != nil {
-		return ctx.SendStatus(fiber.StatusNotFound)
+		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "child by id not found"})
 	}
 
-	database.DBConn.Delete(&child)
+	if _, err := user.DeleteChild(database.DBConn, child); err != nil {
+		return ctx.SendStatus(fiber.StatusBadRequest)
+	}
 
 	return ctx.SendStatus(fiber.StatusOK)
 }
