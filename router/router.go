@@ -3,6 +3,7 @@ package router
 import (
 	"childgo/config"
 	"childgo/handler"
+	"childgo/middleware"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -30,6 +31,8 @@ func SetupRoutes(app *fiber.App) {
 
 	// authorized api handlers
 	authorizedGroup.Get("/profile", handler.Profile)
+
+	authorizedGroup.Use(middleware.JwtUserMiddleware)
 
 	//childs
 	authorizedGroup.Get("/childs", handler.Childs)
