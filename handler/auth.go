@@ -1,10 +1,10 @@
 package handler
 
 import (
+	"childgo/config"
 	"childgo/database"
 	"childgo/model"
 	"childgo/model/user"
-	jwtUtil "childgo/utils"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -37,7 +37,9 @@ func Signin(ctx *fiber.Ctx) error {
 		"exp": ExpiriesTime,
 	}
 
-	token, err := jwtUtil.Get(payload)
+	claim := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
+
+	token, err := claim.SignedString(config.SecretKey)
 
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "incorrect jwt token"})
