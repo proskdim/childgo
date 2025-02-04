@@ -6,9 +6,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func FindByEmail(db *gorm.DB, email string) (user *model.User, err error) {
-	err = db.Find(&user, &model.User{Email: email}).Error
-	return user, err
+func Find(db *gorm.DB, u *model.User) (*model.User, error) {
+	err := db.Where("email = ? AND password = ?", &u.Email, &u.Password).First(&u).Error
+	return u, err
+}
+
+func FindByEmail(db *gorm.DB, email string) (*model.User, error) {
+	u := &model.User{}
+	err := db.Model(u).Where("Email = ?", email).First(u).Error
+	return u, err
 }
 
 func FindAllChilds(db *gorm.DB, user *model.User) (*[]model.Child, error) {

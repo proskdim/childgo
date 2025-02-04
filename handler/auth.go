@@ -3,13 +3,12 @@ package handler
 import (
 	"childgo/database"
 	"childgo/model"
+	"childgo/model/user"
 	jwtUtil "childgo/utils"
-	"errors"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	jwt "github.com/golang-jwt/jwt/v5"
-	"gorm.io/gorm"
 )
 
 type (
@@ -21,27 +20,27 @@ type (
 var ExpiriesTime = time.Now().Add(time.Hour * 24).Unix()
 
 func Signin(ctx *fiber.Ctx) error {
-	user := new(model.User)
+	db := database.DBConn
 
-	if err := ctx.BodyParser(&user); err != nil {
+	userData := new(model.User)
+
+	if err := ctx.BodyParser(&userData); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user data"})
 	}
 
-	dbUser := database.DBConn.Where("email = ? AND password = ?", &user.Email, &user.Password).First(&user)
-
-	if errors.Is(dbUser.Error, gorm.ErrRecordNotFound) {
-		return ctx.SendStatus(fiber.StatusUnprocessableEntity)
+	if _, err := user.Find(db, userData); err != nil {
+		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
 	}
 
 	payload := jwt.MapClaims{
-		"sub": &user.Email,
+		"sub": &userData.Email,
 		"exp": ExpiriesTime,
 	}
 
 	token, err := jwtUtil.Get(payload)
 
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "incorrect jwt token"})
 	}
 
 	return ctx.JSON(SignInResponse{
@@ -50,17 +49,19 @@ func Signin(ctx *fiber.Ctx) error {
 }
 
 func Signup(ctx *fiber.Ctx) error {
-	user := new(model.User)
+	db := database.DBConn
 
-	if err := ctx.BodyParser(&user); err != nil {
+	userData := new(model.User)
+
+	if err := ctx.BodyParser(&userData); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user data"})
 	}
 
-	if err := database.DBConn.First(&user, "email = ?", &user.Email).Error; err == nil {
+	if _, err := user.FindByEmail(db, userData.Email); err == nil {
 		return ctx.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "user already exist"})
 	}
 
-	database.DBConn.Create(&user)
+	db.Create(&userData)
 
 	return ctx.SendStatus(fiber.StatusOK)
 }
