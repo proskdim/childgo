@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"childgo/config"
 	"childgo/database"
 	"childgo/model"
 	"childgo/model/user"
@@ -11,7 +12,7 @@ import (
 
 // get all childs for current user
 func Childs(ctx *fiber.Ctx) error {
-	fetchedUser := ctx.Locals("jwt_user").(*model.User)
+	fetchedUser := ctx.Locals(config.ContextJwtUser).(*model.User)
 
 	childs, err := user.FindAllChilds(database.DBConn, fetchedUser)
 
@@ -24,7 +25,7 @@ func Childs(ctx *fiber.Ctx) error {
 
 // add new child
 func NewChild(ctx *fiber.Ctx) error {
-	fetchedUser := ctx.Locals("jwt_user").(*model.User)
+	fetchedUser := ctx.Locals(config.ContextJwtUser).(*model.User)
 
 	child := new(model.Child)
 
@@ -43,7 +44,7 @@ func NewChild(ctx *fiber.Ctx) error {
 
 // get child by id
 func GetChild(ctx *fiber.Ctx) error {
-	fetchedUser := ctx.Locals("jwt_user").(*model.User)
+	fetchedUser := ctx.Locals(config.ContextJwtUser).(*model.User)
 
 	childId, err := strconv.Atoi(ctx.Params("id"))
 
@@ -62,7 +63,7 @@ func GetChild(ctx *fiber.Ctx) error {
 
 // delete child for current user
 func DeleteChild(ctx *fiber.Ctx) error {
-	fetchedUser := ctx.Locals("jwt_user").(*model.User)
+	fetchedUser := ctx.Locals(config.ContextJwtUser).(*model.User)
 
 	childId, err := strconv.Atoi(ctx.Params("id"))
 
@@ -84,7 +85,7 @@ func DeleteChild(ctx *fiber.Ctx) error {
 }
 
 func UpdateChild(ctx *fiber.Ctx) error {
-	fetchedUser := ctx.Locals("jwt_user").(*model.User)
+	fetchedUser := ctx.Locals(config.ContextJwtUser).(*model.User)
 
 	childId, err := strconv.Atoi(ctx.Params("id"))
 

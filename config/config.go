@@ -9,6 +9,7 @@ import (
 var (
 	SecretKey      = []byte("qwerty123456")
 	ContextKeyUser = "user"
+	ContextJwtUser = "jwt_user"
 )
 
 func SetupConfigs(app *fiber.App) {

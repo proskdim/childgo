@@ -27,7 +27,7 @@ func JwtUserMiddleware(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	ctx.Locals("jwt_user", user)
+	ctx.Locals(config.ContextJwtUser, user)
 
 	return ctx.Next()
 }
