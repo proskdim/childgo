@@ -18,18 +18,13 @@ type (
 	}
 )
 
-var (
-	ErrUserExist  = errors.New("user already exist")
-	ErrBodyParser = errors.New("invalid body parameters")
-)
-
 var ExpiriesTime = time.Now().Add(time.Hour * 24).Unix()
 
 func Signin(ctx *fiber.Ctx) error {
 	user := new(model.User)
 
 	if err := ctx.BodyParser(&user); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).SendString(ErrBodyParser.Error())
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user data"})
 	}
 
 	dbUser := database.DBConn.Where("email = ? AND password = ?", &user.Email, &user.Password).First(&user)
@@ -58,11 +53,11 @@ func Signup(ctx *fiber.Ctx) error {
 	user := new(model.User)
 
 	if err := ctx.BodyParser(&user); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).SendString(ErrBodyParser.Error())
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user data"})
 	}
 
 	if err := database.DBConn.First(&user, "email = ?", &user.Email).Error; err == nil {
-		return ctx.Status(fiber.StatusConflict).SendString(ErrUserExist.Error())
+		return ctx.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "user already exist"})
 	}
 
 	database.DBConn.Create(&user)
