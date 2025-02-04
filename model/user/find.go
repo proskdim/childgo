@@ -31,3 +31,13 @@ func DeleteChild(db *gorm.DB, child *model.Child) (*model.Child, error) {
 	err := db.Model(model.Child{}).Delete(child).Error
 	return child, err
 }
+
+func UpdateChild(db *gorm.DB, source *model.Child, new *model.Child) (*model.Child, error) {
+	source.Name = new.Name
+	source.Age = new.Age
+	source.Birthday = new.Birthday
+
+	err := db.Save(source).Error
+
+	return source, err
+}

@@ -154,3 +154,38 @@ func DeleteChild(ctx *fiber.Ctx) error {
 
 	return ctx.SendStatus(fiber.StatusOK)
 }
+
+func UpdateChild(ctx *fiber.Ctx) error {
+	fetchedUser, err := fetchUserFromPayload(ctx)
+
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
+	childId, err := strconv.Atoi(ctx.Params("id"))
+
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusBadRequest)
+	}
+
+  // parse
+	newChild := new(model.Child)
+
+	if err := ctx.BodyParser(newChild); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid child data"})
+	}
+
+	sourceChild, err := user.FindChild(database.DBConn, fetchedUser, childId)
+
+	if err != nil {
+		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "child by id not found"})
+	}
+
+	result, err := user.UpdateChild(database.DBConn, sourceChild, newChild)
+
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusBadRequest)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(result)
+}
