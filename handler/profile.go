@@ -14,7 +14,7 @@ type ProfileResponse struct {
 }
 
 func Profile(ctx *fiber.Ctx) error {
-	token, ok := ctx.Locals(config.CONTEXT_KEY_USER).(*jwt.Token)
+	token, ok := ctx.Locals(config.ContextKeyUser).(*jwt.Token)
 
 	if !ok {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "wrong type of JWT token in context"})

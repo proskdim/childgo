@@ -6,10 +6,10 @@ import (
 )
 
 var (
-	PORT             = getEnv("PORT", "8080")
-	SECRET_KEY       = getEnv("SECRET_KEY", "key")
-	CONTEXT_KEY_USER = getEnv("KEY_USER", "user")
-	CONTEXT_JWT_USER = getEnv("KEY_JWT", "jwt_user")
+	Port           = getEnv("PORT", "8080")
+	SecretKey      = getEnv("SECRET_KEY", "key")
+	ContextKeyUser = getEnv("KEY_USER", "user")
+	ContextJwtUser = getEnv("KEY_JWT", "jwt_user")
 )
 
 func getEnv(name string, fallback string) string {

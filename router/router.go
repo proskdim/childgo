@@ -24,9 +24,9 @@ func SetupRoutes(app *fiber.App) {
 
 	authorizedGroup.Use(jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{
-			Key: []byte(config.SECRET_KEY),
+			Key: []byte(config.SecretKey),
 		},
-		ContextKey: config.CONTEXT_KEY_USER,
+		ContextKey: config.ContextKeyUser,
 	}))
 
 	// authorized api handlers
