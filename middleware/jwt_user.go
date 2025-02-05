@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"childgo/config"
-	"childgo/database"
+	"childgo/config/database"
 	"childgo/model"
 	"childgo/model/user"
 	"errors"

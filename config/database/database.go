@@ -2,6 +2,7 @@ package database
 
 import (
 	"childgo/model"
+	"childgo/utils/env"
 	"context"
 	"errors"
 
@@ -13,9 +14,9 @@ import (
 var DBConn *gorm.DB
 var RDconn *redis.Client
 
-const (
-	tableName = "child.db"
-	cacheAddr = "localhost:6379"
+var (
+	TableName = env.Fetch("DB", "child.db")
+	Cache     = env.Fetch("CACHE", "localhost:6379")
 )
 
 var (
@@ -25,7 +26,7 @@ var (
 )
 
 func ConnectDB() (err error) {
-	conn, err := gorm.Open(sqlite.Open(tableName))
+	conn, err := gorm.Open(sqlite.Open(TableName))
 
 	if err != nil {
 		return ErrDBConnection
@@ -41,7 +42,7 @@ func ConnectDB() (err error) {
 }
 
 func ConnectCache() (err error) {
-	RDconn = redis.NewClient(&redis.Options{Addr: cacheAddr})
+	RDconn = redis.NewClient(&redis.Options{Addr: Cache})
 
 	if err = RDconn.Ping(context.Background()).Err(); err != nil {
 		return ErrRDConnection

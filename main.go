@@ -2,7 +2,7 @@ package main
 
 import (
 	"childgo/config"
-	"childgo/database"
+	"childgo/config/database"
 	"childgo/router"
 	"fmt"
 

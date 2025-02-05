@@ -2,7 +2,7 @@ package handler
 
 import (
 	"childgo/config"
-	"childgo/database"
+	"childgo/config/database"
 	"childgo/model/user"
 
 	"github.com/gofiber/fiber/v2"

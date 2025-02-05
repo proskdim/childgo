@@ -1,25 +1,10 @@
 package config
 
-import (
-	"fmt"
-	"os"
-)
+import "childgo/utils/env"
 
 var (
-	Port           = getEnv("PORT", "8080")
-	SecretKey      = getEnv("SECRET_KEY", "key")
-	ContextKeyUser = getEnv("KEY_USER", "user")
-	ContextJwtUser = getEnv("KEY_JWT", "jwt_user")
+	Port           = env.Fetch("PORT", "8080")
+	SecretKey      = env.Fetch("SECRET_KEY", "key")
+	ContextKeyUser = env.Fetch("KEY_USER", "user")
+	ContextJwtUser = env.Fetch("KEY_JWT", "jwt_user")
 )
-
-func getEnv(name string, fallback string) string {
-	if value, exists := os.LookupEnv(name); exists {
-		return value
-	}
-
-	if fallback != "" {
-		return fallback
-	}
-
-	panic(fmt.Sprintf(`Environment variable not found :: %v`, name))
-}
