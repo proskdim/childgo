@@ -24,5 +24,5 @@ func main() {
 	config.SetupConfigs(webApp)
 	router.SetupRoutes(webApp)
 
-	logrus.Error(webApp.Listen(fmt.Sprintf(":%v", config.PORT)))
+	logrus.Error(webApp.Listen(fmt.Sprintf(":%v", config.Port)))
 }
