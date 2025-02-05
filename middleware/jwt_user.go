@@ -14,7 +14,7 @@ import (
 
 // fetch user before api handlers
 func JwtUserMiddleware(ctx *fiber.Ctx) error {
-	token, ok := ctx.Locals(config.ContextKeyUser).(*jwt.Token)
+	token, ok := ctx.Locals(config.CONTEXT_KEY_USER).(*jwt.Token)
 	db := database.DBConn
 
 	if !ok {
@@ -27,7 +27,7 @@ func JwtUserMiddleware(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	ctx.Locals(config.ContextJwtUser, user)
+	ctx.Locals(config.CONTEXT_JWT_USER, user)
 
 	return ctx.Next()
 }

@@ -39,7 +39,7 @@ func Signin(ctx *fiber.Ctx) error {
 
 	claim := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 
-	token, err := claim.SignedString(config.SecretKey)
+	token, err := claim.SignedString([]byte(config.SECRET_KEY))
 
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "incorrect jwt token"})

@@ -4,13 +4,10 @@ import (
 	"childgo/config"
 	"childgo/database"
 	"childgo/router"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
-)
-
-const (
-	appAddress = "localhost:8080"
 )
 
 func main() {
@@ -27,5 +24,5 @@ func main() {
 	config.SetupConfigs(webApp)
 	router.SetupRoutes(webApp)
 
-	logrus.Error(webApp.Listen(appAddress))
+	logrus.Error(webApp.Listen(fmt.Sprintf(":%v", config.PORT)))
 }

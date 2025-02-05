@@ -6,12 +6,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
-var (
-	SecretKey      = []byte("qwerty123456")
-	ContextKeyUser = "user"
-	ContextJwtUser = "jwt_user"
-)
-
 func SetupConfigs(app *fiber.App) {
 	app.Use(logger.New(logger.Config{
 		Format:     "${time} ${method} ${path} - ${status} - ${latency}\n",
