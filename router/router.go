@@ -3,7 +3,7 @@ package router
 import (
 	"childgo/config"
 	"childgo/handler"
-	"childgo/middleware"
+	"childgo/utils/middleware"
 
 	"github.com/gofiber/fiber/v2"
 
