@@ -1,11 +1,12 @@
 package handler
 
 import (
+	model "childgo/app/models"
+	"childgo/app/models/user"
 	"childgo/config"
 	"childgo/config/database"
-	"childgo/app/models"
-	"childgo/app/models/user"
 	"childgo/utils/pagination"
+	"fmt"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,8 +14,8 @@ import (
 
 const (
 	badRequest = fiber.StatusBadRequest
-	notFound = fiber.StatusNotFound
-	statusOk = fiber.StatusOK
+	notFound   = fiber.StatusNotFound
+	statusOk   = fiber.StatusOK
 )
 
 // get all childs for current user
@@ -35,6 +36,7 @@ func Childs(ctx *fiber.Ctx) error {
 		Page:    page,
 		Limit:   10,
 		ShowSQL: true,
+		Cond:    fmt.Sprintf("user_id = %v", fetchedUser.ID),
 	}, &childs)
 
 	if err != nil {
