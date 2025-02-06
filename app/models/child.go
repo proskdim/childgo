@@ -3,15 +3,17 @@ package model
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type Child struct {
 	gorm.Model
 
-	Name     string    `gorm:"not null" json:"name"`
-	Age      int       `gorm:"not null" json:"age"`
-	Birthday time.Time `gorm:"not null" json:"birthday"`
+	ID       uuid.UUID `gorm:"type:uuid"`
+	Name     string    `gorm:"not null"  json:"name"`
+	Age      int       `gorm:"not null"  json:"age"`
+	Birthday time.Time `gorm:"not null"  json:"birthday"`
 
-	UserID uint
+	UserID uuid.UUID
 }

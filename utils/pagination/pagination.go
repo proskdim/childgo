@@ -14,7 +14,7 @@ type Option struct {
 	Page    int
 	Limit   int
 	ShowSQL bool
-	Cond    string
+	Conds   []any
 }
 
 func Paginate(o *Option, data interface{}) *Paginator {
@@ -33,8 +33,8 @@ func Paginate(o *Option, data interface{}) *Paginator {
 
 	done := make(chan bool, 1)
 
-	go count(db, data, o.Cond, &paginator.Total, done)
-	db.Scopes(Page(o.Page, o.Limit)).Find(data, o.Cond)
+	go count(db, data, o.Conds, &paginator.Total, done)
+	db.Scopes(Page(o.Page, o.Limit)).Find(data, o.Conds...)
 
 	paginator.Data = data
 	<-done
@@ -51,8 +51,8 @@ func Page(page, limit int) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func count(db *gorm.DB, model interface{}, cond string, total *int64, done chan bool) {
-	db.Model(model).Where(cond).Count(total)
+func count(db *gorm.DB, model interface{}, conds []any, total *int64, done chan bool) {
+	db.Model(model).Find(model, conds...).Count(total)
 	done <- true
 }
 

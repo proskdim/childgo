@@ -6,7 +6,7 @@ import (
 	"childgo/config/database"
 	"childgo/utils"
 	"childgo/utils/pagination"
-	"fmt"
+	"childgo/utils/uuidv7"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -40,7 +40,7 @@ func Childs(ctx *fiber.Ctx) error {
 		Page:    page,
 		Limit:   10,
 		ShowSQL: true,
-		Cond:    fmt.Sprintf("user_id = %v", u.ID),
+		Conds:   []any{"user_id", u.ID},
 	}, &chs)
 
 	return ctx.JSON(pagy)
@@ -55,6 +55,13 @@ func NewChild(ctx *fiber.Ctx) error {
 		return ctx.Status(err.Code).JSON(fiber.Map{"error": "invalid child data"})
 	}
 
+	uuid, err := uuidv7.Generate()
+
+	if err != nil {
+		return ctx.Status(err.Code).JSON(fiber.Map{"error": "failed generate uuid"})
+	}
+
+	c.ID = *uuid
 	c.UserID = u.ID
 
 	if err := repo.CreateChild(c).Error; err != nil {

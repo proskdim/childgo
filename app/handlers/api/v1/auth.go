@@ -6,6 +6,7 @@ import (
 	"childgo/config"
 	"childgo/utils"
 	"childgo/utils/password"
+	"childgo/utils/uuidv7"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -66,6 +67,13 @@ func Signup(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "user already exist"})
 	}
 
+	uuid, err := uuidv7.Generate()
+
+	if err != nil {
+		return ctx.Status(err.Code).JSON(fiber.Map{"error": "failed generate uuid"})
+	}
+
+	m.ID = *uuid
 	m.Password = password.Generate(m.Password)
 
 	if err := repo.CreateUser(m).Error; err != nil {

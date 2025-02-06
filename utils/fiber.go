@@ -3,9 +3,9 @@ package utils
 import (
 	model "childgo/app/models"
 	"childgo/config"
-	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 // ParseBody is helper function for parsing the body.
@@ -20,14 +20,14 @@ func ParseBody(ctx *fiber.Ctx, body interface{}) *fiber.Error {
 }
 
 // ParseID is helper function for parsing query param id
-func ParseID(ctx *fiber.Ctx) (int, *fiber.Error) {
-	id, err := strconv.Atoi(ctx.Params("id"))
+func ParseID(ctx *fiber.Ctx) (*uuid.UUID, *fiber.Error) {
+	uuid, err := uuid.Parse(ctx.Params("id", ""))
 
 	if err != nil {
-		return 0, fiber.ErrBadRequest
+		return nil, fiber.ErrBadRequest
 	}
 
-	return id, nil
+	return &uuid, nil
 }
 
 // GetUser is helper function for getting authenticated user's id

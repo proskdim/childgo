@@ -1,7 +1,7 @@
 package repo
 
 import (
-	"childgo/app/models"
+	model "childgo/app/models"
 	"childgo/config/database"
 
 	"gorm.io/gorm"
