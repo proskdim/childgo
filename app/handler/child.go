@@ -3,8 +3,8 @@ package handler
 import (
 	"childgo/config"
 	"childgo/config/database"
-	"childgo/model"
-	"childgo/model/user"
+	"childgo/app/model"
+	"childgo/app/model/user"
 	"childgo/utils/pagination"
 	"strconv"
 

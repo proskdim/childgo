@@ -3,7 +3,7 @@ package main
 import (
 	"childgo/config"
 	"childgo/config/database"
-	"childgo/router"
+	"childgo/app/router"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"

@@ -3,7 +3,7 @@ package handler
 import (
 	"childgo/config"
 	"childgo/config/database"
-	"childgo/model/user"
+	"childgo/app/model/user"
 
 	"github.com/gofiber/fiber/v2"
 	jwt "github.com/golang-jwt/jwt/v5"
