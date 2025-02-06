@@ -20,8 +20,8 @@ func ChildRoutes(app fiber.Router) {
 	authorizedGroup.Use(jwtware.New(jwtConfig))
 
 	// authorized api handlers
-	authorizedGroup.Get("/profile", handler.Profile)
 	authorizedGroup.Use(middleware.JwtUserMiddleware)
+	authorizedGroup.Get("/profile", handler.Profile)
 
 	authorizedGroup.Get("/childs", handler.Childs)
 	authorizedGroup.Get("/child/:id", handler.GetChild)
