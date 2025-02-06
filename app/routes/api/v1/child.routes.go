@@ -1,40 +1,28 @@
-package router
+package routes
 
 import (
+	handler "childgo/app/handlers/api/v1"
 	"childgo/config"
-	"childgo/app/handler"
 	"childgo/utils/middleware"
 
-	"github.com/gofiber/fiber/v2"
-
 	jwtware "github.com/gofiber/contrib/jwt"
+	"github.com/gofiber/fiber/v2"
 )
 
-func SetupRoutes(app *fiber.App) {
-	api := app.Group("api/v1")
+var jwtConfig = jwtware.Config{
+	SigningKey: jwtware.SigningKey{ Key: []byte(config.SecretKey)},
+	ContextKey: config.ContextKeyUser,
+}
 
-	// healthcheck
-	api.Get("/", handler.Ok)
+func ChildRoutes(app fiber.Router) {
+	authorizedGroup := app.Group("")
 
-	// auth
-	api.Post("/signup", handler.Signup)
-	api.Post("/signin", handler.Signin)
-
-	authorizedGroup := api.Group("")
-
-	authorizedGroup.Use(jwtware.New(jwtware.Config{
-		SigningKey: jwtware.SigningKey{
-			Key: []byte(config.SecretKey),
-		},
-		ContextKey: config.ContextKeyUser,
-	}))
+	authorizedGroup.Use(jwtware.New(jwtConfig))
 
 	// authorized api handlers
 	authorizedGroup.Get("/profile", handler.Profile)
-
 	authorizedGroup.Use(middleware.JwtUserMiddleware)
 
-	//childs
 	authorizedGroup.Get("/childs", handler.Childs)
 	authorizedGroup.Get("/child/:id", handler.GetChild)
 	authorizedGroup.Post("/child", handler.NewChild)

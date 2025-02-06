@@ -1,7 +1,7 @@
 package database
 
 import (
-	"childgo/app/model"
+	"childgo/app/models"
 	"childgo/utils/env"
 	"context"
 	"errors"

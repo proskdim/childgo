@@ -1,9 +1,9 @@
 package main
 
 import (
+	routes "childgo/app/routes/api/v1"
 	"childgo/config"
 	"childgo/config/database"
-	"childgo/app/router"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	webApp := fiber.New()
+	app := fiber.New()
 
 	if err := database.ConnectDB(); err != nil {
 		panic(err)
@@ -21,8 +21,12 @@ func main() {
 		panic(err)
 	}
 
-	config.SetupConfigs(webApp)
-	router.SetupRoutes(webApp)
+	config.SetupConfigs(app)
 
-	logrus.Error(webApp.Listen(fmt.Sprintf(":%v", config.Port)))
+	api := app.Group("api/v1")
+
+	routes.AuthRoutes(api)
+	routes.ChildRoutes(api)
+
+	logrus.Error(app.Listen(fmt.Sprintf(":%v", config.Port)))
 }

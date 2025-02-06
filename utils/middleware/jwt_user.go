@@ -3,8 +3,8 @@ package middleware
 import (
 	"childgo/config"
 	"childgo/config/database"
-	"childgo/app/model"
-	"childgo/app/model/user"
+	"childgo/app/models"
+	"childgo/app/models/user"
 	"errors"
 
 	"github.com/gofiber/fiber/v2"

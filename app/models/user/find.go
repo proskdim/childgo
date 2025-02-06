@@ -1,7 +1,7 @@
 package user
 
 import (
-	"childgo/app/model"
+	"childgo/app/models"
 	"gorm.io/gorm"
 )
 
