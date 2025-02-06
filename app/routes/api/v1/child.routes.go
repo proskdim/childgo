@@ -10,7 +10,7 @@ import (
 )
 
 var jwtConfig = jwtware.Config{
-	SigningKey: jwtware.SigningKey{ Key: []byte(config.SecretKey)},
+	SigningKey: jwtware.SigningKey{Key: []byte(config.SecretKey)},
 	ContextKey: config.ContextKeyUser,
 }
 

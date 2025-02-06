@@ -1,10 +1,9 @@
 package handler
 
 import (
+	model "childgo/app/models"
+	"childgo/app/models/repo"
 	"childgo/config"
-	"childgo/config/database"
-	"childgo/app/models"
-	"childgo/app/models/user"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -20,20 +19,20 @@ type (
 var ExpiriesTime = time.Now().Add(time.Hour * 24).Unix()
 
 func Signin(ctx *fiber.Ctx) error {
-	db := database.DBConn
+	m := new(model.User)
 
-	userData := new(model.User)
-
-	if err := ctx.BodyParser(&userData); err != nil {
+	if err := ctx.BodyParser(m); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user data"})
 	}
 
-	if _, err := user.Find(db, userData); err != nil {
+	u := &model.User{}
+
+	if err := repo.FindUser(u, m).Error; err != nil {
 		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
 	}
 
 	payload := jwt.MapClaims{
-		"sub": &userData.Email,
+		"sub": u.Email,
 		"exp": ExpiriesTime,
 	}
 
@@ -51,19 +50,21 @@ func Signin(ctx *fiber.Ctx) error {
 }
 
 func Signup(ctx *fiber.Ctx) error {
-	db := database.DBConn
+	m := new(model.User)
 
-	userData := new(model.User)
-
-	if err := ctx.BodyParser(&userData); err != nil {
+	if err := ctx.BodyParser(m); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user data"})
 	}
 
-	if _, err := user.FindByEmail(db, userData.Email); err == nil {
+	u := &model.User{}
+
+	if err := repo.FindUser(u, "email", m.Email).Error; err == nil {
 		return ctx.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "user already exist"})
 	}
 
-	db.Create(&userData)
+	if err := repo.CreateUser(m).Error; err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "user created error"})
+	}
 
 	return ctx.SendStatus(fiber.StatusOK)
 }

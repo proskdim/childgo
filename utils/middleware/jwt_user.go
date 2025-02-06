@@ -1,27 +1,24 @@
 package middleware
 
 import (
+	model "childgo/app/models"
+	"childgo/app/models/repo"
 	"childgo/config"
-	"childgo/config/database"
-	"childgo/app/models"
-	"childgo/app/models/user"
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"gorm.io/gorm"
 )
 
 // fetch user before api handlers
 func JwtUserMiddleware(ctx *fiber.Ctx) error {
 	token, ok := ctx.Locals(config.ContextKeyUser).(*jwt.Token)
-	db := database.DBConn
 
 	if !ok {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "wrong type of JWT token in context"})
 	}
 
-	user, err := fetchUser(db, token)
+	user, err := fetchUser(token)
 
 	if err != nil {
 		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
@@ -33,7 +30,7 @@ func JwtUserMiddleware(ctx *fiber.Ctx) error {
 }
 
 // fetch user from db by jwt token
-func fetchUser(db *gorm.DB, token *jwt.Token) (*model.User, error) {
+func fetchUser(token *jwt.Token) (*model.User, error) {
 	payload, ok := token.Claims.(jwt.MapClaims)
 
 	if !ok {
@@ -42,11 +39,13 @@ func fetchUser(db *gorm.DB, token *jwt.Token) (*model.User, error) {
 
 	email := payload["sub"].(string)
 
-	dbUser, err := user.FindByEmail(db, email)
+	u := &model.User{}
+
+	err := repo.FindUser(u, "email", email).Error
 
 	if err != nil {
 		return nil, errors.New("user by jwt token not found")
 	}
 
-	return dbUser, nil
+	return u, nil
 }

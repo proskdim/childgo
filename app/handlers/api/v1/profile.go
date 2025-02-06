@@ -1,12 +1,12 @@
 package handler
 
 import (
+	model "childgo/app/models"
+	"childgo/app/models/repo"
 	"childgo/config"
-	"childgo/config/database"
-	"childgo/app/models/user"
 
 	"github.com/gofiber/fiber/v2"
-	jwt "github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type ProfileResponse struct {
@@ -28,13 +28,13 @@ func Profile(ctx *fiber.Ctx) error {
 
 	email := payload["sub"].(string)
 
-	dbUser, err := user.FindByEmail(database.DBConn, email)
+	u := &model.User{}
 
-	if err != nil {
+	if err := repo.FindUser(u, "email", email).Error; err != nil {
 		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
 	}
 
 	return ctx.JSON(ProfileResponse{
-		Email: dbUser.Email,
+		Email: u.Email,
 	})
 }
