@@ -34,6 +34,5 @@ func DeleteChild(childIden interface{}, userIden interface{}) *gorm.DB {
 
 // UpdateChild allows to update the child with the given childID and userID
 func UpdateChild(childIden interface{}, userIden interface{}, data interface{}) *gorm.DB {
-	database.DBConn = database.DBConn.Debug()
 	return database.DBConn.Model(&model.Child{}).Where("id = ? AND user_id = ?", childIden, userIden).Updates(data)
 }

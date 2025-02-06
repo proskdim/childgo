@@ -35,3 +35,8 @@ func GetUser(ctx *fiber.Ctx) *model.User {
 	id, _ := ctx.Locals(config.ContextJwtUser).(*model.User)
 	return id
 }
+
+// MapErr is helper function for fiber.Map result
+func MapErr(v interface{}) fiber.Map {
+	return fiber.Map{"error": v}
+}

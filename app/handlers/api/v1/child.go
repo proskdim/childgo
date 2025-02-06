@@ -3,6 +3,7 @@ package handler
 import (
 	model "childgo/app/models"
 	"childgo/app/models/repo"
+	"childgo/app/types"
 	"childgo/config/database"
 	"childgo/utils"
 	"childgo/utils/pagination"
@@ -24,7 +25,7 @@ func Childs(ctx *fiber.Ctx) error {
 	page, err := strconv.Atoi(ctx.Query("page", "1"))
 
 	if err != nil {
-		return ctx.Status(badRequest).JSON(fiber.Map{"error": "cannot parse page param"})
+		return ctx.Status(badRequest).JSON(utils.MapErr("cannot parse page param"))
 	}
 
 	u := utils.GetUser(ctx)
@@ -32,7 +33,7 @@ func Childs(ctx *fiber.Ctx) error {
 	chs := []model.Child{}
 
 	if err := repo.FindChildrensByUser(&chs, u.ID).Error; err != nil {
-		return ctx.Status(notFound).JSON(fiber.Map{"error": "error to fetch all childs"})
+		return ctx.Status(notFound).JSON(utils.MapErr("error to fetch all childs"))
 	}
 
 	pagy := pagination.Paginate(&pagination.Option{
@@ -52,20 +53,20 @@ func NewChild(ctx *fiber.Ctx) error {
 	u := utils.GetUser(ctx)
 
 	if err := utils.ParseBody(ctx, c); err != nil {
-		return ctx.Status(err.Code).JSON(fiber.Map{"error": "invalid child data"})
+		return ctx.Status(err.Code).JSON(utils.MapErr("invalid child data"))
 	}
 
 	uuid, err := uuidv7.Generate()
 
 	if err != nil {
-		return ctx.Status(err.Code).JSON(fiber.Map{"error": "failed generate uuid"})
+		return ctx.Status(err.Code).JSON(utils.MapErr("failed generate uuid"))
 	}
 
 	c.ID = *uuid
 	c.UserID = u.ID
 
 	if err := repo.CreateChild(c).Error; err != nil {
-		return ctx.Status(badRequest).JSON(fiber.Map{"error": "error to add child"})
+		return ctx.Status(badRequest).JSON(utils.MapErr("error to add child"))
 	}
 
 	return ctx.JSON(c)
@@ -79,11 +80,11 @@ func GetChild(ctx *fiber.Ctx) error {
 	id, err := utils.ParseID(ctx)
 
 	if err != nil {
-		return ctx.Status(err.Code).JSON(fiber.Map{"error": "failed read id param"})
+		return ctx.Status(err.Code).JSON(utils.MapErr("failed read id param"))
 	}
 
 	if err := repo.FindChildByUser(c, id, u.ID).Error; err != nil {
-		return ctx.Status(notFound).JSON(fiber.Map{"error": "child not found"})
+		return ctx.Status(notFound).JSON(utils.MapErr("child not found"))
 	}
 
 	return ctx.JSON(c)
@@ -96,17 +97,17 @@ func DeleteChild(ctx *fiber.Ctx) error {
 	id, err := utils.ParseID(ctx)
 
 	if err != nil {
-		return ctx.Status(err.Code).JSON(fiber.Map{"error": "failed read id param"})
+		return ctx.Status(err.Code).JSON(utils.MapErr("failed read id param"))
 	}
 
 	res := repo.DeleteChild(id, u.ID)
 
 	if res.RowsAffected == 0 {
-		return ctx.Status(conflict).JSON(fiber.Map{"error": "unable to delete child"})
+		return ctx.Status(conflict).JSON(utils.MapErr("unable to delete child"))
 	}
 
 	if res.Error != nil {
-		return ctx.Status(badRequest).JSON(fiber.Map{"error": "error do delete child"})
+		return ctx.Status(badRequest).JSON(utils.MapErr("error do delete child"))
 	}
 
 	return ctx.SendStatus(statusOk)
@@ -120,16 +121,24 @@ func UpdateChild(ctx *fiber.Ctx) error {
 	id, err := utils.ParseID(ctx)
 
 	if err != nil {
-		return ctx.Status(err.Code).JSON(fiber.Map{"error": "failed read id param"})
+		return ctx.Status(err.Code).JSON(utils.MapErr("failed read id param"))
 	}
 
 	if err := utils.ParseBody(ctx, c); err != nil {
-		return ctx.Status(err.Code).JSON(fiber.Map{"error": "invalid child data"})
+		return ctx.Status(err.Code).JSON(utils.MapErr("invalid child data"))
 	}
 
-	if err := repo.UpdateChild(id, u.ID, c).Error; err != nil {
-		return ctx.Status(badRequest).JSON(fiber.Map{"error": "error to update child"})
+	res := repo.UpdateChild(id, u.ID, c)
+
+	if res.Error != nil {
+		return ctx.Status(badRequest).JSON(utils.MapErr("error to update child"))
 	}
 
-	return ctx.Status(statusOk).JSON(c)
+	if res.RowsAffected == 0 {
+		return ctx.Status(notFound).JSON(utils.MapErr("child not found"))
+	}
+
+	return ctx.JSON(types.MsgResp{
+		Message: "successfull updated",
+	})
 }
