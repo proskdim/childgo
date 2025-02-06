@@ -3,8 +3,8 @@ package handler
 import (
 	model "childgo/app/models"
 	"childgo/app/models/repo"
-	"childgo/config"
 	"childgo/config/database"
+	"childgo/utils"
 	"childgo/utils/pagination"
 	"fmt"
 	"strconv"
@@ -16,6 +16,7 @@ const (
 	badRequest = fiber.StatusBadRequest
 	notFound   = fiber.StatusNotFound
 	statusOk   = fiber.StatusOK
+	conflict   = fiber.StatusConflict
 )
 
 // get all childs for current user
@@ -26,7 +27,7 @@ func Childs(ctx *fiber.Ctx) error {
 		return ctx.Status(badRequest).JSON(fiber.Map{"error": "cannot parse page param"})
 	}
 
-	u := ctx.Locals(config.ContextJwtUser).(*model.User)
+	u := utils.GetUser(ctx)
 
 	chs := []model.Child{}
 
@@ -47,12 +48,11 @@ func Childs(ctx *fiber.Ctx) error {
 
 // add new child
 func NewChild(ctx *fiber.Ctx) error {
-	u := ctx.Locals(config.ContextJwtUser).(*model.User)
+	c := new(model.Child)
+	u := utils.GetUser(ctx)
 
-	c := &model.Child{}
-
-	if err := ctx.BodyParser(c); err != nil {
-		return ctx.Status(badRequest).JSON(fiber.Map{"error": "invalid child data"})
+	if err := utils.ParseBody(ctx, c); err != nil {
+		return ctx.Status(err.Code).JSON(fiber.Map{"error": "invalid child data"})
 	}
 
 	c.UserID = u.ID
@@ -66,17 +66,16 @@ func NewChild(ctx *fiber.Ctx) error {
 
 // get child by id
 func GetChild(ctx *fiber.Ctx) error {
-	u := ctx.Locals(config.ContextJwtUser).(*model.User)
+	c := new(model.Child)
+	u := utils.GetUser(ctx)
 
-	childId, err := strconv.Atoi(ctx.Params("id"))
+	id, err := utils.ParseID(ctx)
 
 	if err != nil {
-		return ctx.Status(badRequest).JSON(fiber.Map{"error": "failed to convert id param"})
+		return ctx.Status(err.Code).JSON(fiber.Map{"error": "failed read id param"})
 	}
 
-	c := &model.Child{}
-
-	if err := repo.FindChildByUser(c, childId, u.ID).Error; err != nil {
+	if err := repo.FindChildByUser(c, id, u.ID).Error; err != nil {
 		return ctx.Status(notFound).JSON(fiber.Map{"error": "child not found"})
 	}
 
@@ -85,18 +84,18 @@ func GetChild(ctx *fiber.Ctx) error {
 
 // delete child for current user
 func DeleteChild(ctx *fiber.Ctx) error {
-	u := ctx.Locals(config.ContextJwtUser).(*model.User)
+	u := utils.GetUser(ctx)
 
-	childId, err := strconv.Atoi(ctx.Params("id"))
+	id, err := utils.ParseID(ctx)
 
 	if err != nil {
-		return ctx.Status(badRequest).JSON(fiber.Map{"error": "failed to convert id param"})
+		return ctx.Status(err.Code).JSON(fiber.Map{"error": "failed read id param"})
 	}
 
-	res := repo.DeleteChild(childId, u.ID)
+	res := repo.DeleteChild(id, u.ID)
 
 	if res.RowsAffected == 0 {
-		return ctx.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "unable to delete child"})
+		return ctx.Status(conflict).JSON(fiber.Map{"error": "unable to delete child"})
 	}
 
 	if res.Error != nil {
@@ -108,21 +107,20 @@ func DeleteChild(ctx *fiber.Ctx) error {
 
 // update child for current user
 func UpdateChild(ctx *fiber.Ctx) error {
-	u := ctx.Locals(config.ContextJwtUser).(*model.User)
+	c := new(model.Child)
+	u := utils.GetUser(ctx)
 
-	childId, err := strconv.Atoi(ctx.Params("id"))
+	id, err := utils.ParseID(ctx)
 
 	if err != nil {
-		return ctx.Status(badRequest).JSON(fiber.Map{"error": "failed to convert id param"})
+		return ctx.Status(err.Code).JSON(fiber.Map{"error": "failed read id param"})
 	}
 
-	c := &model.Child{}
-
-	if err := ctx.BodyParser(c); err != nil {
-		return ctx.Status(badRequest).JSON(fiber.Map{"error": "invalid child data"})
+	if err := utils.ParseBody(ctx, c); err != nil {
+		return ctx.Status(err.Code).JSON(fiber.Map{"error": "invalid child data"})
 	}
 
-	if err := repo.UpdateChild(childId, u.ID, c).Error; err != nil {
+	if err := repo.UpdateChild(id, u.ID, c).Error; err != nil {
 		return ctx.Status(badRequest).JSON(fiber.Map{"error": "error to update child"})
 	}
 
