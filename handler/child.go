@@ -5,6 +5,7 @@ import (
 	"childgo/config/database"
 	"childgo/model"
 	"childgo/model/user"
+	"childgo/utils/pagination"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -12,15 +13,29 @@ import (
 
 // get all childs for current user
 func Childs(ctx *fiber.Ctx) error {
+	db := database.DBConn
+	page, err := strconv.Atoi(ctx.Query("page", "1"))
+
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse page param"})
+	}
+
 	fetchedUser := ctx.Locals(config.ContextJwtUser).(*model.User)
 
-	childs, err := user.FindAllChilds(database.DBConn, fetchedUser)
+	childs, err := user.FindAllChilds(db, fetchedUser)
+
+	pagy := pagination.Paginate(&pagination.Option{
+		DB:      db,
+		Page:    page,
+		Limit:   10,
+		ShowSQL: true,
+	}, &childs)
 
 	if err != nil {
 		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "error to fetch all childs"})
 	}
 
-	return ctx.JSON(childs)
+	return ctx.JSON(pagy)
 }
 
 // add new child

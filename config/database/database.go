@@ -16,7 +16,7 @@ var RDconn *redis.Client
 
 var (
 	TableName = env.Fetch("DB", "child.db")
-	Cache     = env.Fetch("CACHE", "localhost:6379")
+	Cache     = env.Fetch("CACHE", ":6379")
 )
 
 var (
