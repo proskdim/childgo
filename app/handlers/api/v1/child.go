@@ -49,7 +49,7 @@ func NewChild(ctx *fiber.Ctx) error {
 	c := new(model.Child)
 	u := utils.GetUser(ctx)
 
-	if err := utils.ParseBody(ctx, c); err != nil {
+	if err := utils.ParseBodyValidator(ctx, c); err != nil {
 		return ctx.Status(err.Code).JSON(utils.MapErr("invalid child data"))
 	}
 
@@ -133,7 +133,7 @@ func UpdateChild(ctx *fiber.Ctx) error {
 		return ctx.Status(err.Code).JSON(utils.MapErr("failed read id param"))
 	}
 
-	if err := utils.ParseBody(ctx, c); err != nil {
+	if err := utils.ParseBodyValidator(ctx, c); err != nil {
 		return ctx.Status(err.Code).JSON(utils.MapErr("invalid child data"))
 	}
 

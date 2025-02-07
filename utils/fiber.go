@@ -4,16 +4,32 @@ import (
 	model "childgo/app/models"
 	"childgo/config"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
 // ParseBody is helper function for parsing the body.
 // Is any error occurs it will panic.
-// Its just a helper function to avoid writing if condition again n again.
 func ParseBody(ctx *fiber.Ctx, body interface{}) *fiber.Error {
 	if err := ctx.BodyParser(body); err != nil {
 		return fiber.ErrBadRequest
+	}
+
+	return nil
+}
+
+// ParseBodyValidator is helpers function for parsing the body
+// and validation structure
+func ParseBodyValidator(ctx *fiber.Ctx, body interface{}) *fiber.Error {
+	if err := ParseBody(ctx, body); err != nil {
+		return err
+	}
+
+	validate := validator.New()
+
+	if err := validate.Struct(body); err != nil {
+		return fiber.ErrUnprocessableEntity
 	}
 
 	return nil

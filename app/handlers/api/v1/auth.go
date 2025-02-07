@@ -54,7 +54,7 @@ func Signup(ctx *fiber.Ctx) error {
 	m := new(model.User)
 	u := new(model.User)
 
-	if err := utils.ParseBody(ctx, m); err != nil {
+	if err := utils.ParseBodyValidator(ctx, m); err != nil {
 		return ctx.Status(err.Code).JSON(fiber.Map{"error": "invalid user data"})
 	}
 

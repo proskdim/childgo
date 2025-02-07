@@ -35,5 +35,5 @@ type SigninResponse struct {
 }
 
 type SignupResponse struct {
-	Email string `json: "email"`
+	Email string `json:"email"`
 }
