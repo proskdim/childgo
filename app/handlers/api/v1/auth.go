@@ -3,6 +3,7 @@ package handler
 import (
 	model "childgo/app/models"
 	"childgo/app/models/repo"
+	"childgo/app/types"
 	"childgo/config"
 	"childgo/utils"
 	"childgo/utils/password"
@@ -11,12 +12,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	jwt "github.com/golang-jwt/jwt/v5"
-)
-
-type (
-	SignInResponse struct {
-		JWTToken string `json:"jwt_token"`
-	}
 )
 
 var ExpiriesTime = time.Now().Add(time.Hour * 24).Unix()
@@ -50,7 +45,7 @@ func Signin(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "incorrect jwt token"})
 	}
 
-	return ctx.JSON(SignInResponse{
+	return ctx.JSON(&types.SigninResponse{
 		JWTToken: token,
 	})
 }
@@ -80,5 +75,7 @@ func Signup(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "user created error"})
 	}
 
-	return ctx.SendStatus(fiber.StatusOK)
+	return ctx.JSON(&types.SignupResponse{
+		Email: m.Email,
+	})
 }

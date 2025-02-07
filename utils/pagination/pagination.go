@@ -1,6 +1,8 @@
 package pagination
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Paginator struct {
 	Page  int         `json:"page"`
@@ -11,6 +13,7 @@ type Paginator struct {
 
 type Option struct {
 	DB      *gorm.DB
+	Model   interface{}
 	Page    int
 	Limit   int
 	ShowSQL bool
@@ -33,7 +36,7 @@ func Paginate(o *Option, data interface{}) *Paginator {
 
 	done := make(chan bool, 1)
 
-	go count(db, data, o.Conds, &paginator.Total, done)
+	go count(db, o.Model, o.Conds, &paginator.Total, done)
 	db.Scopes(Page(o.Page, o.Limit)).Find(data, o.Conds...)
 
 	paginator.Data = data

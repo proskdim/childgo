@@ -30,19 +30,16 @@ func Childs(ctx *fiber.Ctx) error {
 
 	u := utils.GetUser(ctx)
 
-	chs := []model.Child{}
-
-	if err := repo.FindChildrensByUser(&chs, u.ID).Error; err != nil {
-		return ctx.Status(notFound).JSON(utils.MapErr("error to fetch all childs"))
-	}
+	childs := []types.Child{}
 
 	pagy := pagination.Paginate(&pagination.Option{
 		DB:      database.DBConn,
+		Model:   &model.Child{},
 		Page:    page,
 		Limit:   10,
 		ShowSQL: true,
 		Conds:   []any{"user_id", u.ID},
-	}, &chs)
+	}, &childs)
 
 	return ctx.JSON(pagy)
 }
@@ -69,7 +66,12 @@ func NewChild(ctx *fiber.Ctx) error {
 		return ctx.Status(badRequest).JSON(utils.MapErr("error to add child"))
 	}
 
-	return ctx.JSON(c)
+	return ctx.JSON(&types.ChildResponse{
+		ID:       c.ID,
+		Name:     c.Name,
+		Age:      c.Age,
+		Birthday: c.Birthday,
+	})
 }
 
 // get child by id
@@ -87,7 +89,12 @@ func GetChild(ctx *fiber.Ctx) error {
 		return ctx.Status(notFound).JSON(utils.MapErr("child not found"))
 	}
 
-	return ctx.JSON(c)
+	return ctx.JSON(&types.ChildResponse{
+		ID:       c.ID,
+		Name:     c.Name,
+		Age:      c.Age,
+		Birthday: c.Birthday,
+	})
 }
 
 // delete child for current user
@@ -110,7 +117,9 @@ func DeleteChild(ctx *fiber.Ctx) error {
 		return ctx.Status(badRequest).JSON(utils.MapErr("error do delete child"))
 	}
 
-	return ctx.SendStatus(statusOk)
+	return ctx.JSON(&types.MsgResp{
+		Message: "Child successfully deleted",
+	})
 }
 
 // update child for current user
@@ -139,6 +148,6 @@ func UpdateChild(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(types.MsgResp{
-		Message: "successfull updated",
+		Message: "Child successfull updated",
 	})
 }
