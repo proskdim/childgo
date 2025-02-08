@@ -10,6 +10,10 @@ type MsgResp struct {
 	Message string `json:"message"`
 }
 
+type HealthResp struct {
+	Status string `json:"status"`
+}
+
 type ChildRequest struct {
 	Name     string    `json:"name"`
 	Age      int       `json:"age"`
@@ -34,6 +38,20 @@ type SigninResponse struct {
 	JWTToken string `json:"jwt_token"`
 }
 
+type SignupRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type SigninRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type SignupResponse struct {
+	Email string `json:"email"`
+}
+
+type ProfileResponse struct {
 	Email string `json:"email"`
 }

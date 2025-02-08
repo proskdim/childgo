@@ -4,7 +4,7 @@ import (
 	model "childgo/app/models"
 	"childgo/app/models/repo"
 	"childgo/app/types"
-	"childgo/config/database"
+	storage "childgo/config/database"
 	"childgo/utils"
 	"childgo/utils/pagination"
 	"childgo/utils/uuidv7"
@@ -33,7 +33,7 @@ func Childs(ctx *fiber.Ctx) error {
 	childs := []types.Child{}
 
 	pagy := pagination.Paginate(&pagination.Option{
-		DB:      database.DBConn,
+		DB:      storage.Storage.DB,
 		Model:   &model.Child{},
 		Page:    page,
 		Limit:   10,

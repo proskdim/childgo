@@ -1,32 +1,20 @@
 package main
 
 import (
-	routes "childgo/app/routes/api/v1"
+	"childgo/app"
 	"childgo/config"
-	"childgo/config/database"
+	s "childgo/config/database"
+	"childgo/utils/env"
 	"fmt"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	app := fiber.New()
+	dbName := env.Fetch("DB_NAME", "child.db")
+	cache  := env.Fetch("CACHE", ":6379")
 
-	if err := database.ConnectDB(); err != nil {
-		panic(err)
-	}
+	a := app.StartupApp(s.Storage, s.Option{DB: dbName, Cache: cache})
 
-	if err := database.ConnectCache(); err != nil {
-		panic(err)
-	}
-
-	config.SetupConfigs(app)
-
-	api := app.Group("api/v1")
-
-	routes.AuthRoutes(api)
-	routes.ChildRoutes(api)
-
-	logrus.Error(app.Listen(fmt.Sprintf(":%v", config.Port)))
+	logrus.Error(a.Listen(fmt.Sprintf(":%v", config.Port)))
 }

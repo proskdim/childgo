@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	jwt "github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var ExpiriesTime = time.Now().Add(time.Hour * 24).Unix()

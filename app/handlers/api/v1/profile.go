@@ -1,18 +1,16 @@
 package handler
 
 import (
+	"childgo/app/types"
 	"childgo/utils"
+
 	"github.com/gofiber/fiber/v2"
 )
-
-type ProfileResponse struct {
-	Email string `json:"email"`
-}
 
 func Profile(ctx *fiber.Ctx) error {
 	u := utils.GetUser(ctx)
 
-	return ctx.JSON(ProfileResponse{
+	return ctx.JSON(&types.ProfileResponse{
 		Email: u.Email,
 	})
 }
