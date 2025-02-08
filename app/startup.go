@@ -15,9 +15,9 @@ func StartupApp(c storage.Connector, o storage.Option) *fiber.App {
 		panic(err)
 	}
 
-	if err := c.ConnectCache(o.Cache); err != nil {
-		panic(err)
-	}
+	// if err := c.ConnectCache(o.Cache); err != nil {
+	// 	panic(err)
+	// }
 
 	config.SetupConfigs(app)
 
