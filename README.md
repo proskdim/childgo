@@ -5,7 +5,7 @@ start app
  go run main.go
  # or
  go build .
- go ./childgo
+ ./childgo
 ```
 
 run tests
@@ -30,8 +30,8 @@ docker run -p 3005:8087 -d --env-file ./.env childgo
 GET /api/v1/
 POST /api/v1/signin
 POST /api/v1/signup
-GET /api/v1/profile
+GET /api/v1/profile # require Authorization
 
-CRUD
-/api/v1/child
+CRUD 
+/api/v1/child  # require Authorization
 ```
