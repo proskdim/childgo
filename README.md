@@ -23,3 +23,15 @@ run container with env options
 ```go
 docker run -p 3005:8087 -d --env-file ./.env childgo
 ```
+
+### Endpoints
+
+```go
+GET /api/v1/
+POST /api/v1/signin
+POST /api/v1/signup
+GET /api/v1/profile
+
+CRUD
+/api/v1/child
+```
