@@ -30,7 +30,10 @@ func (s *storage) ConnectDB(p string) error {
 
 	s.DB = db
 
-	migration.CreateMigration(db, &model.User{}, &model.Child{})
+	migration.CreateMigration(db,
+		&model.User{},
+		&model.Child{},
+		&model.Address{})
 
 	return nil
 }

@@ -15,5 +15,7 @@ type Child struct {
 	Age      int       `gorm:"not null"  json:"age"  validate:"required,gte=1,lte=18"`
 	Birthday time.Time `gorm:"not null"  json:"birthday" validate:"required"`
 
+	Address Address
+
 	UserID uuid.UUID
 }

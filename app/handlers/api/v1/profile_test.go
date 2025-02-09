@@ -66,9 +66,9 @@ func TestProfile(t *testing.T) {
 			expectedBody: r.Email,
 		},
 		{
-			desc: "return unauthorized (401)",
-			token: "other token",
-			statusCode: 401,
+			desc:         "return unauthorized (401)",
+			token:        "other token",
+			statusCode:   401,
 			expectedBody: "",
 		},
 	}

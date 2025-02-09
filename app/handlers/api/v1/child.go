@@ -66,12 +66,21 @@ func NewChild(ctx *fiber.Ctx) error {
 		return ctx.Status(badRequest).JSON(utils.MapErr("error to add child"))
 	}
 
-	return ctx.JSON(&types.ChildResponse{
-		ID:       c.ID,
-		Name:     c.Name,
-		Age:      c.Age,
-		Birthday: c.Birthday,
-	})
+	address := types.AddressResponse{
+		City:      c.Address.City,
+		Street:    c.Address.Street,
+		House:     c.Address.House,
+		Apartment: c.Address.Apartment,
+	}
+
+	return ctx.JSON(&types.ChildCreateResponse{
+		Child: &types.ChildResponse{
+			ID:       c.ID,
+			Name:     c.Name,
+			Age:      c.Age,
+			Birthday: c.Birthday,
+			Address:  address,
+		}})
 }
 
 // get child by id
@@ -89,12 +98,21 @@ func GetChild(ctx *fiber.Ctx) error {
 		return ctx.Status(notFound).JSON(utils.MapErr("child not found"))
 	}
 
-	return ctx.JSON(&types.ChildResponse{
-		ID:       c.ID,
-		Name:     c.Name,
-		Age:      c.Age,
-		Birthday: c.Birthday,
-	})
+	address := types.AddressResponse{
+		City:      c.Address.City,
+		Street:    c.Address.Street,
+		House:     c.Address.House,
+		Apartment: c.Address.Apartment,
+	}
+
+	return ctx.JSON(&types.ChildCreateResponse{
+		Child: &types.ChildResponse{
+			ID:       c.ID,
+			Name:     c.Name,
+			Age:      c.Age,
+			Birthday: c.Birthday,
+			Address:  address,
+		}})
 }
 
 // delete child for current user
@@ -107,14 +125,8 @@ func DeleteChild(ctx *fiber.Ctx) error {
 		return ctx.Status(err.Code).JSON(utils.MapErr("failed read id param"))
 	}
 
-	res := repo.DeleteChild(id, u.ID)
-
-	if res.RowsAffected == 0 {
-		return ctx.Status(conflict).JSON(utils.MapErr("unable to delete child"))
-	}
-
-	if res.Error != nil {
-		return ctx.Status(badRequest).JSON(utils.MapErr("error do delete child"))
+	if err := repo.DeleteChild(id, u.ID); err != nil {
+		return ctx.Status(badRequest).JSON(utils.MapErr(err.Error()))
 	}
 
 	return ctx.JSON(&types.MsgResp{
@@ -137,14 +149,8 @@ func UpdateChild(ctx *fiber.Ctx) error {
 		return ctx.Status(err.Code).JSON(utils.MapErr("invalid child data"))
 	}
 
-	res := repo.UpdateChild(id, u.ID, c)
-
-	if res.Error != nil {
-		return ctx.Status(badRequest).JSON(utils.MapErr("error to update child"))
-	}
-
-	if res.RowsAffected == 0 {
-		return ctx.Status(notFound).JSON(utils.MapErr("child not found"))
+	if err := repo.UpdateChild(id, u.ID, c); err != nil {
+		return ctx.Status(badRequest).JSON(utils.MapErr(err.Error()))
 	}
 
 	return ctx.JSON(types.MsgResp{

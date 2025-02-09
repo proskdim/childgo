@@ -3,6 +3,7 @@ package repo
 import (
 	model "childgo/app/models"
 	storage "childgo/config/database"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -14,7 +15,7 @@ func CreateChild(child *model.Child) *gorm.DB {
 
 // FindChild finds a child with given condition
 func FindChild(dest interface{}, conds ...interface{}) *gorm.DB {
-	return storage.Storage.DB.Model(&model.Child{}).Take(dest, conds...)
+	return storage.Storage.DB.Model(&model.Child{}).Preload("Address").Take(dest, conds...)
 }
 
 // FindChildByUser finds a child with given child and user identifier
@@ -28,13 +29,57 @@ func FindChildrensByUser(dest interface{}, userIden interface{}) *gorm.DB {
 }
 
 // DeleteChild deletes a child from childrens' table with the given child and user identifier
-func DeleteChild(childIden interface{}, userIden interface{}) *gorm.DB {
-	return storage.Storage.DB.Unscoped().Delete(&model.Child{}, "id = ? AND user_id = ?", childIden, userIden)
+func DeleteChild(childIden interface{}, userIden interface{}) error {
+	return storage.Storage.DB.Transaction(func(tx *gorm.DB) error {
+		dbCh := tx.Unscoped().Delete(&model.Child{}, "id = ? AND user_id = ?", childIden, userIden)
+
+		if dbCh.Error != nil {
+			return dbCh.Error
+		}
+
+		if dbCh.RowsAffected == 0 {
+			return errors.New("rows in child table not affected")
+		}
+
+		dbAdd := tx.Unscoped().Delete(&model.Address{}, "child_id = ?", childIden)
+
+		if dbAdd.Error != nil {
+			return dbAdd.Error
+		}
+
+		if dbAdd.RowsAffected == 0 {
+			return errors.New("rows in address table not affected")
+		}
+
+		return nil
+	})
 }
 
 // UpdateChild allows to update the child with the given childID and userID
-func UpdateChild(childIden interface{}, userIden interface{}, data interface{}) *gorm.DB {
-	return storage.Storage.DB.Model(&model.Child{}).Where("id = ? AND user_id = ?", childIden, userIden).Updates(data)
+func UpdateChild(childIden interface{}, userIden interface{}, data *model.Child) error {
+	return storage.Storage.DB.Transaction(func(tx *gorm.DB) error {
+		dbCh := tx.Model(&model.Child{}).Where("id = ? AND user_id = ?", childIden, userIden).Updates(data)
+
+		if dbCh.Error != nil {
+			return dbCh.Error
+		}
+
+		if dbCh.RowsAffected == 0 {
+			return errors.New("rows in child table not affected")
+		}
+
+		dbAdd := tx.Model(&model.Address{}).Where("child_id = ?", childIden).Updates(data.Address)
+
+		if dbAdd.Error != nil {
+			return dbAdd.Error
+		}
+
+		if dbAdd.RowsAffected == 0 {
+			return errors.New("rows in address table not affected")
+		}
+
+		return nil
+	})
 }
 
 // DeleteChilds delete all records from child's table

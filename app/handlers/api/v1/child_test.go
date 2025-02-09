@@ -127,6 +127,11 @@ func TestNewChild(t *testing.T) {
 
 	assert.NotEqual(t, "", token)
 
+	child := &types.ChildRequest{Name: "test", Age: 10, Birthday: time.Now()}
+	address := &types.AddressRequest{House: "house", Apartment: "1a"}
+
+	child.Address = *address
+
 	tests := []struct {
 		desc       string
 		child      *types.ChildRequest
@@ -135,7 +140,7 @@ func TestNewChild(t *testing.T) {
 	}{
 		{
 			desc:       "return new child (200)",
-			child:      &types.ChildRequest{Name: "test", Age: 10, Birthday: time.Now()},
+			child:      child,
 			token:      token,
 			statusCode: 200,
 		},
@@ -156,6 +161,12 @@ func TestNewChild(t *testing.T) {
 			child:      &types.ChildRequest{Name: "test", Age: 10, Birthday: time.Now()},
 			token:      "",
 			statusCode: 400,
+		},
+		{
+			desc:       "failed request without address (UnprocessableEntity)",
+			child:      &types.ChildRequest{Name: "test", Age: 10, Birthday: time.Now()},
+			token:      token,
+			statusCode: 422,
 		},
 	}
 
@@ -178,13 +189,18 @@ func TestNewChild(t *testing.T) {
 		assert.Equal(t, test.statusCode, resp.StatusCode)
 
 		if resp.StatusCode == 200 {
-			pr := new(types.ChildResponse)
+			pr := new(types.ChildCreateResponse)
 
 			json.NewDecoder(resp.Body).Decode(pr)
 
-			assert.Equal(t, test.child.Name, pr.Name)
-			assert.Equal(t, test.child.Age, pr.Age)
-			assert.Equal(t, test.child.Birthday.GoString(), pr.Birthday.GoString())
+			// child
+			assert.Equal(t, test.child.Name, pr.Child.Name)
+			assert.Equal(t, test.child.Age, pr.Child.Age)
+			assert.Equal(t, test.child.Birthday.GoString(), pr.Child.Birthday.GoString())
+
+			// address
+			assert.Equal(t, test.child.Address.House, pr.Child.Address.House)
+			assert.Equal(t, test.child.Address.Apartment, pr.Child.Address.Apartment)
 		}
 	}
 }
