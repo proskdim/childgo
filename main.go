@@ -12,9 +12,8 @@ import (
 
 func main() {
 	dbName := env.Fetch("DB_NAME", "child.db")
-	cache  := env.Fetch("CACHE", ":6379")
 
-	a := app.StartupApp(s.Storage, s.Option{DB: dbName, Cache: cache})
+	a := app.StartupApp(s.Storage, s.Option{DB: dbName})
 
 	logrus.Error(a.Listen(fmt.Sprintf(":%v", config.Port)))
 }

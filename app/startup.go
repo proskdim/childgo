@@ -15,10 +15,6 @@ func StartupApp(c storage.Connector, o storage.Option) *fiber.App {
 		panic(err)
 	}
 
-	// if err := c.ConnectCache(o.Cache); err != nil {
-	// 	panic(err)
-	// }
-
 	config.SetupConfigs(app)
 
 	api := app.Group("api/v1")
@@ -31,7 +27,6 @@ func StartupApp(c storage.Connector, o storage.Option) *fiber.App {
 
 func StartupTest(c storage.Connector) *fiber.App {
 	dbMem := "file::memory:?cache=shared"
-	cache := ""
 
-	return StartupApp(c, storage.Option{DB: dbMem, Cache: cache})
+	return StartupApp(c, storage.Option{DB: dbMem})
 }
